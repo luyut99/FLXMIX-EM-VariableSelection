@@ -1,0 +1,330 @@
+\documentclass[12pt]{article}
+\usepackage{bbm}
+%\usepackage{mathbbold}ÏòarXivÌáœ»Ê±·¢ÏÖarXiv²»ÈÏžÃ°üÖÐÈç\mathbbm{c}×ÖÌå
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+\usepackage{parskip}
+
+\setlength\parindent{0pt}
+\textwidth 6.5in \textheight8.5in \voffset=-0.6in \hoffset=-0.6in
+
+\renewcommand{\theequation}{\thesection.\arabic{equation}}%This command make to count equation in each section.
+%\textwidth 15cm \textheight21cm \voffset=-0.3in \hoffset=-0.6in
+%\newcommand{\1}{{{\mathchoice {\rm 1\mskip-4mu l} {\rm 1\mskip-4mu l}
+%{\rm 1\mskip-4.5mu l} {\rm 1\mskip-5mu l}}}}
+
+%\usepackage{amsmath,amssymb,latexsym}
+
+\usepackage{psfrag}
+\usepackage{subfigure}
+\usepackage{color}
+
+
+%\usepackage[dvips]{graphics}
+\usepackage{amssymb,latexsym}
+\usepackage{amsmath,latexsym}
+\usepackage{amscd}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}%This command make to count eauation in each section.
+
+\newcommand{\K}{{\mathbb K}}
+\newcommand{\F}{{\mathbb F}}
+\newcommand{\N}{{\mathbb N}}
+\newcommand{\C}{{\mathbb C}}
+\newcommand{\R}{{\mathbb R}}
+\newcommand{\Q}{{\mathbb Q}}
+\newcommand{\Z}{{\mathbb Z}}
+\newcommand{\CP}{{\mathbb CP}}
+\newcommand{\RP}{{\mathbb RP}}
+\renewcommand{\baselinestretch}{1.1}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{cor}[theorem]{Corollary}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{thm}[theorem]{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{rmk}[theorem]{Remark}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{guess}[theorem]{Conjecture}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\def\Int{{ \mathrm{Int}}}
+
+
+\begin{document}
+
+\title{Project 2: Finite mixture models and variable selection}
+\date{Dec. 3rd, 2016}
+\author{Jinchun Zhang and Yuting Lu}
+ \maketitle \vspace{-0.5in}
+
+\vspace{1in}
+
+\abstract{} \vspace{-0.1in}
+\vspace{12mm}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\noindent{\it Keywords}:  \vspace{2mm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Critical groups;
+
+%\tableofcontents
+
+\section{Model Set-up}
+\setcounter{equation}{0}
+
+
+General finite mixture model is:
+\begin{eqnarray}
+  h(y|x,\omega,\psi)&=&\sum_{k=1}^K \pi_k(\omega,\alpha)f_k(y|x,\theta_k) \nonumber\\  %ÈôÒªÈ¡Ïû±àºÅ£¬ÔòÓÃ\nonumber
+  &=&\sum_{k=1}^K \pi_k(\omega,\alpha)\prod_{d=1}^D f_{kd}(y_d|x_d,\theta_{kd}) \nonumber     %ÓÃ·ûºÅ&&±íÊŸ·ûºÅ¶ÔÆë
+\end{eqnarray}
+where $\forall \omega, \sum_{k=1}^K \pi_k(\omega,\alpha)=1$ and $\pi_k(\omega, \alpha)>0, \forall k$; $\psi$ denotes all parameters, i.e. $(\alpha,\theta_1,...,\theta_K)$; $y$ is the response which is a multivariate variable, $x$ is predictor, 
+$\omega$ is concomitant variable. Here we assume that $f_{kd}$ are independent with respect to $d$ so we could write $f_k$ as the product of $f_{kd}$.\\
+
+\noindent
+Suppose $\pi_k$ following a multinomial logit model, i.e.
+$$\pi_k(\omega, \alpha)=\frac{e^{\omega'\alpha_k}}{\sum_{u=1}^K e^{\omega'\alpha_u}}$$
+with $\alpha=(\alpha'_k)'_{k=1,...,K}$ and $\alpha_1 \equiv 0$. \\
+
+\noindent
+In our simple case, we assume $K=2$ and $D=2$. Therefore, the formula is simplified as:
+\begin{eqnarray}
+  h(y|x,\omega,\psi)&=& \pi_1(\omega,\alpha)f_1(y|x,\theta_1)+\pi_2(\omega,\alpha)f_2(y|x,\theta_2) \nonumber\\  
+  &=& \pi_1(\omega,\alpha)f_{11}(y_1|x_1,\theta_{11})f_{12}(y_2|x_2,\theta_{12}) \nonumber \\
+  &+& \pi_2(\omega,\alpha)f_{21}(y_1|x_1,\theta_{21})f_{22}(y_2|x_2,\theta_{22}) \nonumber     
+\end{eqnarray}
+where $y=(y_1,y_2), x=(x_1,x_2),\theta_1=(\theta_{11},\theta_{12}),\theta_2=(\theta_{21},\theta_{22}), \psi=(\alpha, \theta_1, \theta_2)$. $x_1, x_2, \theta_{ij}, i,j=1,2$ can be vectors.\\
+
+\noindent
+If for different component, we have $f_{kd} \equiv f_d$, then
+\begin{eqnarray}
+  h(y|x,\omega,\psi) &=& \pi_1(\omega,\alpha)f_{1}(y_1|x_1,\theta_{11})f_{2}(y_2|x_2,\theta_{12}) \nonumber \\  
+  &+& \pi_2(\omega,\alpha)f_{1}(y_1|x_1,\theta_{21})f_{2}(y_2|x_2,\theta_{22}) \nonumber    
+\end{eqnarray}
+
+\noindent
+Assume that $y$ is made up by two components, $y_1$, which is a continuous variable, and $y_2$, which is a discrete variable. For example, $(y_1,x_1)$ can be modeled by a regular linear regression, $(y_2,x_2)$ can be modeled by a logistic regression.\\
+
+\noindent
+Thus, for component 1:
+\begin{eqnarray}
+  y_1 &=& x'_1\theta_{11}+\epsilon_1, \quad \epsilon_1 \sim N(0,\sigma_1^2) \nonumber \\
+  logit(p_1) &=& x'_2\theta_{12}, \quad y_2 \sim Bernoulli(p_1) \nonumber
+\end{eqnarray}
+
+\noindent
+For component 2:
+\begin{eqnarray}
+  y_1 &=& x'_1\theta_{21}+\epsilon_2, \quad \epsilon_2 \sim N(0,\sigma_2^2) \nonumber \\
+  logit(p_2) &=& x'_2\theta_{22}, \quad y_2 \sim Bernoulli(p_2) \nonumber
+\end{eqnarray}
+
+\section{EM Algorithm}
+E-Step: Given $\psi^{(i)}$,
+\begin{eqnarray}
+  \hat{p}_{nk} &=& \frac{\pi_k(\omega_n, \alpha^{(i)})f(y_n|x_n,\theta_k^{(i)})}{\pi_1(\omega_n, \alpha^{(i)})f(y_n|x_n,\theta_1^{(i)})+\pi_2(\omega_n, \alpha^{(i)})f(y_n|x_n,\theta_2^{(i)})} \nonumber \\
+  &=& \frac{\pi_k(\omega_n, \alpha^{(i)})f_1(y_{1n}|x_{1n},\theta_{k1}^{(i)})f_2(y_{2n}|x_{2n},\theta_{k2}^{(i)})}{\pi_1(\omega_n, \alpha^{(i)})f_1(y_{1n}|x_{1n},\theta_{11}^{(i)})f_2(y_{2n}|x_{2n},\theta_{12}^{(i)})+\pi_2(\omega_n, \alpha^{(i)})f_1(y_{1n}|x_{1n},\theta_{21}^{(i)})f_2(y_{2n}|x_{2n},\theta_{22}^{(i)})} \nonumber
+\end{eqnarray}\\
+
+where $$f_1(y_{1n}|x_{1n},\theta_{k1}^{(i)})=\frac{1}{\sqrt{2\pi\sigma_k^2}}e^{-\frac{(y_{1n}-x'_{1n}\theta_{k1}^{(i)})^2}{2\sigma_k^2}}$$
+
+$$f_2(y_{2n}|x_{2n},\theta_{k2}^{(i)})=\frac{1}{1+e^{x'_{2n}\theta_{k2}^{(i)}}}e^{y_{2n}(x'_{2n}\theta_{k2}^{(i)})}$$\\
+for $k=1,2$.\\
+
+\noindent
+M-Step: Given $\hat{p}_{nk}$, find $\psi^{(i+1)}$ that maximizing
+$$Q(\psi^{(i+1)}|\psi^{(i)})=Q_1(\theta^{(i+1)}|\psi^{(i)})+Q_2(\alpha^{(i+1)}|\psi^{(i)})$$
+where
+\begin{eqnarray*}
+  Q_1(\theta^{(i+1)}|\psi^{(i)}) &=&
+  \sum_{n=1}^N \{\hat{p}_{n1} [log(f_1(y_{1n}|x_{1n},\theta_{11}^{(i+1)}))+log(f_2(y_{2n}|x_{2n},\theta_{12}^{(i+1)}))]  \\
+  &+& \hat{p}_{n2} [log(f_1(y_{1n}|x_{1n},\theta_{21}^{(i+1)}))+log(f_2(y_{2n}|x_{2n},\theta_{22}^{(i+1)}))]\} \\
+  &=& \sum_{n=1}^N \{\hat{p}_{n1} [-log \sqrt{2\pi\sigma_1^2}-\frac{(y_{1n}-x'_{1n}\theta_{11}^{(i+1)})^2}{2\sigma_1^2}-log(1+e^{x'_{2n}\theta_{12}^{(i+1)}})+y_{2n}x'_{2n}\theta_{12}^{(i+1)}]\\
+  &+& \hat{p}_{n2} [-log \sqrt{2\pi\sigma_2^2}-\frac{(y_{1n}-x'_{1n}\theta_{21}^{(i+1)})^2}{2\sigma_2^2}-log(1+e^{x'_{2n}\theta_{22}^{(i+1)}})+y_{2n}x'_{2n}\theta_{22}^{(i+1)}]\}\\
+\end{eqnarray*}
+
+\begin{eqnarray*}
+  Q_2(\alpha^{(i+1)}|\psi^{(i)}) &=& \sum_{n=1}^N [\hat{p}_{n1} log(\pi_1(\omega_n,\alpha^{(i+1)})+ \hat{p}_{n2} log(\pi_2(\omega_n,\alpha^{(i+1)})] \\
+  &=& \sum_{n=1}^N [-\hat{p}_{n1} log(1+e^{\omega'\alpha_2^{(i+1)}})+ \hat{p}_{n2} (\omega'\alpha_2^{(i+1)}-log(1+e^{\omega'\alpha_2^{(i+1)}}))]
+\end{eqnarray*}\\
+
+\noindent
+$Q_1$ and $Q_2$ can be maximized seperately.
+
+\section{Penalized Version}
+Suppose we only want to select predictors, then $Q_1$ is penalized. The penalized nagetive complete log-likelihood function of $Q_1$ is\\
+\begin{eqnarray*}
+  l_{p}(y,x|\theta) &=&
+  \sum_{n=1}^N - \{z_{n1} [log(f_1(y_{1n}|x_{1n},\theta_{11}))+log(f_2(y_{2n}|x_{2n},\theta_{12}))]  \\
+  &+& z_{n2} [log(f_1(y_{1n}|x_{1n},\theta_{21}))+log(f_2(y_{2n}|x_{2n},\theta_{22}))]\}\\
+  &+& p_{\lambda_1}(\theta_{11})
+  +p_{\lambda_2}(\theta_{12})+p_{\lambda_3}(\theta_{21})+p_{\lambda_4}(\theta_{22})\\
+  &=& \sum_{n=1}^N \{\hat{p}_{n1} [log \sqrt{2\pi\sigma_1^2}+\frac{(y_{1n}-x'_{1n}\theta_{11})^2}{2\sigma_1^2}+log(1+e^{x'_{2n}\theta_{12}})-y_{2n}x'_{2n}\theta_{12}]\\
+  &+& \hat{p}_{n2} [log \sqrt{2\pi\sigma_2^2}+\frac{(y_{1n}-x'_{1n}\theta_{21})^2}{2\sigma_2^2}+log(1+e^{x'_{2n}\theta_{22}})-y_{2n}x'_{2n}\theta_{22}]\}\\
+  &+& p_{\lambda_1}(\theta_{11})
+  +p_{\lambda_2}(\theta_{12})+p_{\lambda_3}(\theta_{21})+p_{\lambda_4}(\theta_{22})\\
+\end{eqnarray*}
+
+\noindent
+With penalty, E-step is the same as that in section 2, M-step is updated with penalized complete log-likelihood function.\\
+M-Step: Given $\hat{p}_{nk}$, find $\psi^{(i+1)}$ that minimizing
+$$-Q(\psi^{(i+1)}|\psi^{(i)})=-Q_{1,p}(\theta^{(i+1)}|\psi^{(i)})-Q_2(\alpha^{(i+1)}|\psi^{(i)})$$
+where $Q_2$ is the same as that in section 2, $Q_{1,p}$ is
+
+\begin{eqnarray*}
+  Q_{1,p} (\theta^{(i+1)}|\psi^{(i)}) &=&
+  \sum_{n=1}^N \{\hat{p}_{n1} [log \sqrt{2\pi\sigma_1^2}+\frac{(y_{1n}-x'_{1n}\theta_{11}^{(i+1)})^2}{2\sigma_1^2}+log(1+e^{x'_{2n}\theta_{12}^{(i+1)}})-y_{2n}x'_{2n}\theta_{12}^{(i+1)}]\\
+  &+& \hat{p}_{n2} [log \sqrt{2\pi\sigma_2^2}+\frac{(y_{1n}-x'_{1n}\theta_{21}^{(i+1)})^2}{2\sigma_2^2}+log(1+e^{x'_{2n}\theta_{22}^{(i+1)}})-y_{2n}x'_{2n}\theta_{22}^{(i+1)}]\}\\
+  &+& p_{\lambda_1}(\theta_{11}^{(i+1)})
+  +p_{\lambda_2}(\theta_{12}^{(i+1)})+p_{\lambda_3}(\theta_{21}^{(i+1)})+p_{\lambda_4}(\theta_{22}^{(i+1)})\\
+\end{eqnarray*}
+
+\noindent
+In fact, unknown parameters $\theta_{11}, \theta_{12}, \theta_{21}, \theta_{22}$ can be estimated seperately, which is equivalent to
+\[
+\begin{cases}
+  \hat{\theta}_{11}=argmin_{\theta_{11}} \sum_{n=1}^N \hat{p}_{n1}[log \sqrt{2\pi\sigma_1^2}+\frac{(y_{1n}-x'_{1n}\theta_{11})^2}{2\sigma_1^2}]+p_{\lambda_1}(\theta_{11})
+  \\
+  \hat{\theta}_{12}=argmin_{\theta_{12}} \sum_{n=1}^N \hat{p}_{n1} [log(1+e^{x'_{2n}\theta_{12}^{(i+1)}})-y_{2n}x'_{2n}\theta_{12}]+p_{\lambda_2}(\theta_{12})\\
+  \hat{\theta}_{21}=argmin_{\theta_{21}} \sum_{n=1}^N \hat{p}_{n2}[log \sqrt{2\pi\sigma_2^2}+\frac{(y_{1n}-x'_{1n}\theta_{21})^2}{2\sigma_2^2}]+p_{\lambda_3}(\theta_{21}) \\
+  \hat{\theta}_{22}=argmin_{\theta_{22}} \sum_{n=1}^N \hat{p}_{n2} [log(1+e^{x'_{2n}\theta_{22}^{(i+1)}})-y_{2n}x'_{2n}\theta_{22}]+p_{\lambda_4}(\theta_{22})\\
+\end{cases}.
+\]
+
+\noindent
+We could use R packages \verb"glmnet" and \verb"flexmix" to solve it. \\
+(To be continued...)
+
+\vspace{5mm}
+
+\section{Simulation}
+\subsection{Generating data}
+
+Assume $y=(y_1,y_2)$, $y_1,y_2$ are univariate. $x=(x_1,x_2,x_3)$, where $x_1,x_2,x_3$ are continuous. Generate
+$y_1$ using $(x_1,x_2,x_3)$ by a simple linear model, $y_2$ using $(x_1,x_2,x_3)$ by a logistic regression model.\\
+
+\noindent
+Simulation will be implemented in R using the following code:
+
+\begin{verbatim}
+#SIMULATION
+#x = [x1,x2,x3]
+set.seed(2017)
+n = 1000 #number of total observation simulated, a mixed observation
+x1 <- runif(n,-1,1)
+x2 <- runif(n,1,100)
+x3 <- runif(n,-100,199)
+eps <- rnorm(n,0,runif(1,1,2))
+
+#Component One
+beta110 = runif(1,-10,10)
+beta111 = runif(1,-6,6)
+beta112 = runif(1,-6,6)
+beta113 = runif(1,-6,6)
+#y1 ~ x simple linear
+yl1 =beta110 + beta111*x1 + beta112*x2 + beta113*x3
+#yb ~ x logistic regression
+beta120 = runif(1,-10,10)
+beta121 = runif(1,-6,6)
+beta122 = runif(1,-6,6)
+beta123 = runif(1,-6,6)
+linpred = beta120 + beta121*x1 + beta122*x2 + beta123*x3
+prob = 1/(1 + exp(-linpred))
+yb1 = rbinom(1000,1,prob)
+
+#Component Two
+beta210 = runif(1,-10,10)
+beta211 = runif(1,-6,6)
+beta212 = runif(1,-6,6)
+beta213 = runif(1,-6,6)
+#y1 ~ x simple linear
+yl2=beta210 + beta211*x1 + beta212*x2 + beta213*x3
+#yb ~ x logistic regression
+beta220 = runif(1,-10,10)
+beta221 = runif(1,1,6)
+beta222 = runif(1,-10,10)
+beta223 = runif(1,-10,10)
+linpred = beta220 + beta221*x1 + beta222*x2 + beta223*x3
+prob = 1/(1 + exp(-linpred))
+yb2 = rbinom(1000,1,prob)
+
+#combine the two component
+data_raw = data.frame(c(yl1,yl2), c(yb1, yb2), c(x1,x1),c(x2,x2),c(x3,x3))
+p = 0.6 	# p is the proportion of component 1
+index1=sample(1:n, n*p, replace=F)
+index2=sample(1:n, n*(1-p), replace=F)+ n
+test_data=data_raw[c(index1,index2), ]
+colnames(test_data) = c("yl","yb","x1","x2","x3")
+\end{verbatim}
+
+\subsection{Variable Selection}
+There is an available interface between \verb"glmnet" and \verb"flexmix", which allow one to include adaptive lasso variable selection strategy in model fitting.\\
+R codes:
+
+\begin{verbatim}
+#LASSO
+#glmnet(as.matrix(data.frame(x1,x2,x3), yb[[1]], family="binomial")
+Model_l <- FLXMRglm(yl ~ x1+x2+x3)
+Model_b <- FLXMRglmnet(cbind(yb, 1-yb)~ x1+x2+x3 , family = "binomial")
+m1 <- flexmix(.~x1+x2+x3, data = test_data, k = 2, model = list(Model_l,
+      Model_b),control = list(verbose = 5))
+\end{verbatim}
+
+\noindent
+SCAD?
+
+\vspace{2mm}
+
+
+\begin{thebibliography}{L3}
+  \bibitem{BGL} Bettina Grun, Friedrich Leisch,  Flexmix Version 2: Finite Mixtures with 
+  Concomitant Variables and Varying and Constant Parameters.
+  {\it J. Statistical Software}, {\bf 28}(2008), Issue. 4, 1--35.
+\end{thebibliography}
+
+
+
+
+%\noindent\bf{\footnotesize Acknowledgements}.\quad{\rm
+%I thank Professor Guangcun Lu for suggesting this question to me.
+%This work is partially supported by the NNSF  10671017 and 10971014 of China.}
+
+%% \hfill$\Box$\\[0.01mm]
+
+
+%\begin{thebibliography}{L3}
+
+
+
+%\bibitem{AbF} A. Abbondandolo, A. Figalli,  High action orbits for
+% Tonelli Lagrangians and superlinear Hamiltonians on compact configuration spaces.
+% {\it J. Differential Equations}, {\bf 234}(2007), no. 2, 626--653.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\bibitem{AdFo} R. A. Adams, J.J.F. Fournier, {\it Sobolev Spaces},
+%%2nd Edition, Elsevier (Singapore) Pte Ltd, 2009.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\bibitem{ArKe} B. Aradi, D. CS. Kertesz,
+%Isometries, submetries and distance coordinates on Finsler manifolds.
+%{\it Acta Math. Hungar.}, {\bf 143}(2014),  no. 2, 337--350.
+
+
+%\end{thebibliography}{L3}
+
+
+\end{document}
+
